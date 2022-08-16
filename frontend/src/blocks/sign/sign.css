@@ -1,0 +1,12 @@
+.sign {
+  max-width: 358px;
+  margin: 0 auto;
+  padding: 60px 0 15px 0;
+}
+
+@media screen and (max-width: 619px) {
+  .sign {
+    max-width: 260px;
+    padding: 40px 0 20px 0;
+  }
+}

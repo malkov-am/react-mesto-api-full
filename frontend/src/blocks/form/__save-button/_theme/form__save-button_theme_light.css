@@ -1,0 +1,8 @@
+.form__save-button_theme_light {
+  background-color: #000;
+  color: #fff;
+}
+
+.form__save-button_theme_light:hover {
+  opacity: 0.8;
+}

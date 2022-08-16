@@ -1,0 +1,13 @@
+.form__input_theme_dark {
+  background-color: #000;
+  color: #fff;
+  border-bottom: 2px solid #ccc;
+  caret-color: #fff;
+  -webkit-box-shadow: inset 0 0 0 50px #000;
+  -webkit-text-fill-color: #fff;
+}
+
+.form__input_theme_dark::placeholder {
+  color: #ccc;
+  -webkit-text-fill-color: #ccc;
+}

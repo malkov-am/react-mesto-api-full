@@ -1,0 +1,10 @@
+.header__menu-button {
+  display: none;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  background: center no-repeat url(../../../images/header-burger-btn.svg);
+  width: 24px;
+  height: 21px;
+  transition: transform 0.2s ease-in;
+}

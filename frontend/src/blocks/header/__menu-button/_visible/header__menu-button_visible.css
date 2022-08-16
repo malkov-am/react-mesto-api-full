@@ -1,0 +1,5 @@
+@media screen and (max-width: 619px) {
+  .header__menu-button_visible {
+    display: block;
+  }
+}

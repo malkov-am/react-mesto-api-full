@@ -29,7 +29,7 @@ function createCard(req, res, next) {
       return next(err);
     })
     .then((card) => {
-      res.send(card);
+      card.populate(['owner', 'likes']).then((populatedCard) => res.send(populatedCard));
     });
 }
 

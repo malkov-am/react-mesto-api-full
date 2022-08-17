@@ -30,7 +30,6 @@ function App() {
   const [cards, setCards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Хук useNavigate
   const navigate = useNavigate();
@@ -40,16 +39,27 @@ function App() {
     setIsTooltipSuccess(false);
     setTooltipOpen(true);
   }
-  // Запись данных пользователя в переменную состояния
+  // Чтение токена
+  const token = localStorage.getItem('token');
+    // Действия при загрузке приложения: проверяем токен
+    useEffect(() => {
+      handleTokenCheck();
+    }, []);
+  // Действия при логине пользователя: запрашиваем данные о пользователе и карточки
   useEffect(() => {
-    api
-      .getInitialData()
+    if(isLoggedIn) {
+      api
+      .getInitialData(token)
       .then(([initialCards, currentUser]) => {
         setCurrentUser(currentUser);
-        setCards([...cards, ...initialCards]);
+        setCards(initialCards.reverse());
       })
       .catch((error) => handleError(error));
-  }, []);
+    };
+    if(!isLoggedIn) {
+      setCurrentUser({});
+    };
+  }, [isLoggedIn, token]);
 
   // Обработчик нажатия на кнопку редактирования профиля
   function handleEditProfileClick() {
@@ -87,7 +97,7 @@ function App() {
     const isLiked = card.likes.some((user) => user._id === currentUser._id);
     // Отправляем запрос в API и получаем обновлённые данные карточки
     api
-      .changeLikeCardStatus(card._id, isLiked)
+      .changeLikeCardStatus(card._id, isLiked, token)
       .then((newCard) => {
         setCards((state) => state.map((c) => (c._id === card._id ? newCard : c)));
       })
@@ -97,7 +107,7 @@ function App() {
   function handleCardConfirmDelete(card) {
     setIsLoading(true);
     api
-      .deleteCard(card._id)
+      .deleteCard(card._id, token)
       .then(() => {
         setCards((state) => state.filter((c) => c._id !== card._id));
         closeAllPopups();
@@ -109,7 +119,7 @@ function App() {
   function handleUpdateUser(userData) {
     setIsLoading(true);
     api
-      .setProfileData(userData)
+      .setProfileData(userData, token)
       .then((updatedUserData) => {
         setCurrentUser(updatedUserData);
         closeAllPopups();
@@ -121,7 +131,7 @@ function App() {
   function handleUpdateAvatar(avatarData) {
     setIsLoading(true);
     api
-      .changeAvatar(avatarData)
+      .changeAvatar(avatarData, token)
       .then((updatedUserData) => {
         setCurrentUser(updatedUserData);
         closeAllPopups();
@@ -133,7 +143,7 @@ function App() {
   function handleAddPlaceSubmit(cardData) {
     setIsLoading(true);
     api
-      .addCard(cardData)
+      .addCard(cardData, token)
       .then((newCard) => {
         setCards([newCard, ...cards]);
         closeAllPopups();
@@ -170,30 +180,23 @@ function App() {
       .finally(() => setIsLoading(false));
   }
   // Обработчик проверки токена
-  const handleTokenCheck = () => {
-    if (localStorage.getItem('token')) {
-      const token = localStorage.getItem('token');
+  function handleTokenCheck() {
+    if (token) {
       auth
         .checkToken(token)
-        .then(({ data }) => {
-          setUserEmail(data.email);
+        .then(() => {
           setIsLoggedIn(true);
           navigate('/');
         })
         .catch((error) => handleError(error));
     }
   };
-  // Проверка токена, получение email пользователя
-  useEffect(() => {
-    handleTokenCheck();
-  }, [isLoggedIn]);
   // Обработчик выхода пользователя из системы
   function handleLogout() {
     localStorage.removeItem('token');
     navigate('/sign-in');
     setIsLoggedIn(false);
     setIsMenuOpen(false);
-    setUserEmail('');
   }
   // Открытие / закрытие меню
   function toggleMenu() {
@@ -203,14 +206,13 @@ function App() {
   return (
     <div className="app">
       <div className={`page ${isLoggedIn && !isMenuOpen && 'page_shifted'}`}>
+      <CurrentUserContext.Provider value={currentUser}>
         <Header
           onLogout={handleLogout}
           isLoggedIn={isLoggedIn}
-          userEmail={userEmail}
           toggleMenu={toggleMenu}
           isMenuOpen={isMenuOpen}
         />
-        <CurrentUserContext.Provider value={currentUser}>
           <Routes>
             <Route
               path="/"

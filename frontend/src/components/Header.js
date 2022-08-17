@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import headerLogoPath from '../images/header-logo.svg';
+import { CurrentUserContext } from '../contexts/CurrentUserContext';
 
-const Header = ({ onLogout, isLoggedIn, userEmail, toggleMenu, isMenuOpen }) => {
+const Header = ({ onLogout, isLoggedIn, toggleMenu, isMenuOpen }) => {
   // Переменные состояния
   const [btnState, setbtnState] = useState({ label: '', action: () => {} });
+    // Подписка на контекст с данными о текущем пользователе
+    const currentUser = useContext(CurrentUserContext);
   // Хук useLocation
   const location = useLocation();
   // Хук useNavigation
@@ -29,7 +32,7 @@ const Header = ({ onLogout, isLoggedIn, userEmail, toggleMenu, isMenuOpen }) => 
       <img className="header__logo" src={headerLogoPath} alt="Логотип Mesto" />
       <ul className={`${isLoggedIn && 'header__burger-menu'} header__menu`}>
         <li>
-          <p className="header__user-email">{userEmail && userEmail}</p>
+          <p className="header__user-email">{currentUser.email && currentUser.email}</p>
         </li>
         <li>
           <button

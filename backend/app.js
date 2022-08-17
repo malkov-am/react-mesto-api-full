@@ -14,7 +14,8 @@ const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb');
-const { PORT = 3000 } = process.env;
+// const { PORT = 3000 } = process.env;
+const PORT = 3003;
 
 // Middlewares
 app.use(bodyParser.json());

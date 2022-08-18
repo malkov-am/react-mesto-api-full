@@ -10,6 +10,7 @@
 | Ссылка на проект | https://malkov.mesto.nomoredomains.sbs |
 |:----:|:---:|
 | Ссылка на API | http://malkov.api.mesto.nomoredomains.sbs |
+| Публичный IP адрес сервера | 51.250.0.202 |
 
 
 ## При создании сайта использовались следующие технологии:

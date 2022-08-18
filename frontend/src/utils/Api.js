@@ -95,7 +95,7 @@ class Api {
 }
 
 const api = new Api({
-  baseUrl: 'http://malkov.api.mesto.nomoredomains.sbs',
+  baseUrl: 'https://malkov.api.mesto.nomoredomains.sbs',
 });
 
 export default api;

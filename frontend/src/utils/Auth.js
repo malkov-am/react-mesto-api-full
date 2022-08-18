@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://malkov.api.mesto.nomoredomains.sbs';
+export const BASE_URL = 'https://malkov.api.mesto.nomoredomains.sbs';
 
 function handleResponse(res) {
   return res.ok ? res.json() : Promise.reject(res.status);

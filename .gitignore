@@ -18,8 +18,5 @@ build
 .prettierrc
 .editorconfig
 
-# ESLint config
-.eslintrc
-
 # Environment variables
 .env

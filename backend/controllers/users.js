@@ -45,23 +45,33 @@ function createUser(req, res, next) {
     email,
     password,
   } = req.body;
-  bcrypt
-    .hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
+  User.findOne({ email })
     .then((user) => {
-      res.status(CREATED_CODE).send({
-        _id: user._id,
-        name,
-        about,
-        avatar,
-        email,
-      });
+      if (user) {
+        return next(
+          new ConflictError({
+            message: `Пользователь с таким email: ${user.email} уже зарегестрирован.`,
+          }),
+        );
+      }
+      return bcrypt
+        .hash(password, 10)
+        .then((hash) => User.create({
+          name,
+          about,
+          avatar,
+          email,
+          password: hash,
+        }))
+        .then((newUser) => {
+          res.status(CREATED_CODE).send({
+            _id: newUser._id,
+            name,
+            about,
+            avatar,
+            email,
+          });
+        });
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -87,16 +97,24 @@ function login(req, res, next) {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        JWT_SECRET,
-        {
-          expiresIn: '7d',
-        },
-      );
-      res.send({ token });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: '7d',
+      });
+      // res.send({ token });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+        })
+        .send({ message: 'Выполнен вход в систему' })
+        .end();
     })
     .catch(next);
+}
+
+// Выход из системы
+function logout(req, res, next) {
+  res.clearCookie('jwt').send({ message: 'Вы вышли из системы' }).catch(next);
 }
 
 // Обновление профиля
@@ -156,5 +174,6 @@ module.exports = {
   updateProfile,
   updateAvatar,
   login,
+  logout,
   getUserInfo,
 };

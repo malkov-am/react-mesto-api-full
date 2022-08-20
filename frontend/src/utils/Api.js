@@ -7,41 +7,37 @@ class Api {
     return res.ok ? res.json() : Promise.reject(res.status);
   }
   // Запрос карточек с сервера
-  _getInitialCards(token) {
+  _getInitialCards() {
     return fetch(`${this._baseUrl}/cards`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     }).then((res) => this._handleResponse(res));
   }
   // Запрос данных пользователя с сервера
-  _getProfileData(token) {
+  _getProfileData() {
     return fetch(`${this._baseUrl}/users/me`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     }).then((res) => this._handleResponse(res));
   }
-  getInitialData(token) {
-    return Promise.all([this._getInitialCards(token), this._getProfileData(token)]);
+  getInitialData() {
+    return Promise.all([this._getInitialCards(), this._getProfileData()]);
   }
   // Отправка данных пользователя на сервер
-  setProfileData({ name, about }, token) {
+  setProfileData({ name, about }) {
     return fetch(`${this._baseUrl}/users/me`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
-        authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ name: name, about: about }),
     }).then((res) => this._handleResponse(res));
   }
   // Добавление новой карточки на сервер
-  addCard({ name, link }, token) {
+  addCard({ name, link }) {
     return fetch(`${this._baseUrl}/cards`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -51,42 +47,36 @@ class Api {
     }).then((res) => this._handleResponse(res));
   }
   // Удаление карточки с сервера
-  deleteCard(cardId, token) {
+  deleteCard(cardId) {
     return fetch(`${this._baseUrl}/cards/${cardId}`, {
       method: 'DELETE',
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     }).then((res) => this._handleResponse(res));
   }
   // Изменить статус лайка
-  changeLikeCardStatus(cardId, isLiked, token) {
-    return !isLiked ? this._addLike(cardId, token) : this._removeLike(cardId, token);
+  changeLikeCardStatus(cardId, isLiked) {
+    return !isLiked ? this._addLike(cardId) : this._removeLike(cardId);
   }
   // Добавить лайк к карточке
-  _addLike(cardId, token) {
+  _addLike(cardId) {
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
       method: 'PUT',
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     }).then((res) => this._handleResponse(res));
   }
   // Удалить лайк с карточки
-  _removeLike(cardId, token) {
+  _removeLike(cardId) {
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
       method: 'DELETE',
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
     }).then((res) => this._handleResponse(res));
   }
   // Изменить аватар пользователя
-  changeAvatar(avatarData, token) {
+  changeAvatar(avatarData) {
     return fetch(`${this._baseUrl}/users/me/avatar`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
-        authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(avatarData),

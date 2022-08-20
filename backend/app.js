@@ -5,9 +5,10 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/NotFoundError');
-const { createUser, login } = require('./controllers/users');
+const { createUser, login, logout } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { validateSignup, validateSignin } = require('./middlewares/requestValidation');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -17,8 +18,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 const { PORT = 3000 } = process.env;
 
 // Middlewares
+app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  }),
+);
 // Логгер запросов
 app.use(requestLogger);
 
@@ -34,6 +41,7 @@ app.use('/signin', validateSignin, login);
 app.use('/signup', validateSignup, createUser);
 // Защищенные маршруты
 app.use(auth);
+app.get('/signout', logout);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 // Неправильный URL

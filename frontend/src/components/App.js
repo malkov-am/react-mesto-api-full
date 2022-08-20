@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
@@ -39,27 +39,26 @@ function App() {
     setIsTooltipSuccess(false);
     setTooltipOpen(true);
   }
-  // Чтение токена
-  const token = localStorage.getItem('token');
-    // Действия при загрузке приложения: проверяем токен
-    useEffect(() => {
-      handleTokenCheck();
-    }, []);
+
+  // Действия при загрузке приложения: проверяем токен
+  useEffect(() => {
+    handleTokenCheck();
+  }, []);
   // Действия при логине пользователя: запрашиваем данные о пользователе и карточки
   useEffect(() => {
-    if(isLoggedIn) {
+    if (isLoggedIn) {
       api
-      .getInitialData(token)
-      .then(([initialCards, currentUser]) => {
-        setCurrentUser(currentUser);
-        setCards(initialCards.reverse());
-      })
-      .catch((error) => handleError(error));
-    };
-    if(!isLoggedIn) {
+        .getInitialData()
+        .then(([initialCards, currentUser]) => {
+          setCurrentUser(currentUser);
+          setCards(initialCards.reverse());
+        })
+        .catch((error) => handleError(error));
+    }
+    if (!isLoggedIn) {
       setCurrentUser({});
-    };
-  }, [isLoggedIn, token]);
+    }
+  }, [isLoggedIn]);
 
   // Обработчик нажатия на кнопку редактирования профиля
   function handleEditProfileClick() {
@@ -97,7 +96,7 @@ function App() {
     const isLiked = card.likes.some((user) => user._id === currentUser._id);
     // Отправляем запрос в API и получаем обновлённые данные карточки
     api
-      .changeLikeCardStatus(card._id, isLiked, token)
+      .changeLikeCardStatus(card._id, isLiked)
       .then((newCard) => {
         setCards((state) => state.map((c) => (c._id === card._id ? newCard : c)));
       })
@@ -107,7 +106,7 @@ function App() {
   function handleCardConfirmDelete(card) {
     setIsLoading(true);
     api
-      .deleteCard(card._id, token)
+      .deleteCard(card._id)
       .then(() => {
         setCards((state) => state.filter((c) => c._id !== card._id));
         closeAllPopups();
@@ -119,7 +118,7 @@ function App() {
   function handleUpdateUser(userData) {
     setIsLoading(true);
     api
-      .setProfileData(userData, token)
+      .setProfileData(userData)
       .then((updatedUserData) => {
         setCurrentUser(updatedUserData);
         closeAllPopups();
@@ -131,7 +130,7 @@ function App() {
   function handleUpdateAvatar(avatarData) {
     setIsLoading(true);
     api
-      .changeAvatar(avatarData, token)
+      .changeAvatar(avatarData)
       .then((updatedUserData) => {
         setCurrentUser(updatedUserData);
         closeAllPopups();
@@ -143,7 +142,7 @@ function App() {
   function handleAddPlaceSubmit(cardData) {
     setIsLoading(true);
     api
-      .addCard(cardData, token)
+      .addCard(cardData)
       .then((newCard) => {
         setCards([newCard, ...cards]);
         closeAllPopups();
@@ -170,8 +169,7 @@ function App() {
     auth
       .authorize(userData)
       .then((data) => {
-        if (data.token) {
-          localStorage.setItem('token', data.token);
+        if (data) {
           setIsLoggedIn(true);
           navigate('/');
         }
@@ -181,22 +179,31 @@ function App() {
   }
   // Обработчик проверки токена
   function handleTokenCheck() {
-    if (token) {
-      auth
-        .checkToken(token)
-        .then(() => {
-          setIsLoggedIn(true);
-          navigate('/');
-        })
-        .catch((error) => handleError(error));
-    }
-  };
+    auth
+      .checkToken()
+      .then(() => {
+        setIsLoggedIn(true);
+        navigate('/');
+      })
+      .catch((error) => {
+        if (error === 401) {
+          setIsLoggedIn(false);
+          navigate('/sign-in');
+        } else {
+          handleError(error);
+        }
+      });
+  }
   // Обработчик выхода пользователя из системы
   function handleLogout() {
-    localStorage.removeItem('token');
-    navigate('/sign-in');
-    setIsLoggedIn(false);
-    setIsMenuOpen(false);
+    auth
+      .logout()
+      .then(() => {
+        navigate('/sign-in');
+        setIsLoggedIn(false);
+        setIsMenuOpen(false);
+      })
+      .catch((error) => handleError(error));
   }
   // Открытие / закрытие меню
   function toggleMenu() {
@@ -206,13 +213,13 @@ function App() {
   return (
     <div className="app">
       <div className={`page ${isLoggedIn && !isMenuOpen && 'page_shifted'}`}>
-      <CurrentUserContext.Provider value={currentUser}>
-        <Header
-          onLogout={handleLogout}
-          isLoggedIn={isLoggedIn}
-          toggleMenu={toggleMenu}
-          isMenuOpen={isMenuOpen}
-        />
+        <CurrentUserContext.Provider value={currentUser}>
+          <Header
+            onLogout={handleLogout}
+            isLoggedIn={isLoggedIn}
+            toggleMenu={toggleMenu}
+            isMenuOpen={isMenuOpen}
+          />
           <Routes>
             <Route
               path="/"
